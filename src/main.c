@@ -19,8 +19,6 @@ int main()
     camera.fovy = 60.0f;
     camera.projection = CAMERA_PERSPECTIVE;
     
-    SetCameraMode(camera, CAMERA_ORBITAL);
-
     Vector3 cubePosition = { 0 };
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -31,7 +29,7 @@ int main()
     {
         // Update
         //----------------------------------------------------------------------------------
-        UpdateCamera(&camera);
+        UpdateCamera(&camera, CAMERA_ORBITAL);
         //----------------------------------------------------------------------------------
 
         // Draw

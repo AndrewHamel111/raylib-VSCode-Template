@@ -25,12 +25,13 @@
 
 # Define required raylib variables
 PROJECT_NAME       ?= main
-RAYLIB_VERSION     ?= 4.0.0
+RAYLIB_VERSION     ?= 4.5.0
 RAYLIB_PATH        ?= C:/raylib/raylib
 COMPILER_PATH      ?= C:/raylib/w64devkit/bin
-BUILD_MODE         ?= RELEASE
+BUILD_MODE         ?= DEBUG
 EXT				   ?= .exe
 PLATFORM           ?= PLATFORM_DESKTOP
+EXTRA			   ?= 
 # One of PLATFORM_DESKTOP, PLATFORM_RPI, PLATFORM_ANDROID, PLATFORM_WEB
 
 DESTDIR ?= /usr/local
@@ -70,6 +71,13 @@ ifeq ($(PLATFORM),PLATFORM_RPI)
     UNAMEOS=$(shell uname)
     ifeq ($(UNAMEOS),Linux)
         PLATFORM_OS=LINUX
+    endif
+endif
+
+ifeq ($(PLATFORM),PLATFORM_DESKTOP)
+    ifeq ($(PLATFORM_OS),OSX)
+        RAYLIB_PATH = /Users/ahamel/raylib
+        EXT = 
     endif
 endif
 
@@ -137,7 +145,7 @@ endif
 #  -std=gnu99           defines C language mode (GNU C from 1999 revision)
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS += -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces
+CFLAGS += -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces $(EXTRA)
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -O0
@@ -183,7 +191,7 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     EXT = .html
 endif
 
-INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external
+INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external -I./include
 
 ifeq ($(PLATFORM),PLATFORM_RPI)
     INCLUDE_PATHS += -I/opt/vc/include
@@ -240,7 +248,7 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
         endif
     endif
     ifeq ($(PLATFORM_OS),OSX)
-        LDLIBS = -lraylib -framework OpenGL -framework OpenAL -framework Cocoa
+        LDLIBS = -lraylib -framework OpenGL -framework OpenAL -framework Cocoa -framework IOKit -framework CoreAudio -framework CoreVideo
     endif
     ifeq ($(PLATFORM_OS),BSD)
         LDLIBS = -lraylib -lGL -lpthread -lm
@@ -284,14 +292,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),WINDOWS)
-		del *.o *.exe /s
+		rm $(OBJS) $(PROJECT_NAME)$(EXT)
     endif
     ifeq ($(PLATFORM_OS),LINUX)
 	find -type f -executable | xargs file -i | grep -E 'x-object|x-archive|x-sharedlib|x-executable' | rev | cut -d ':' -f 2- | rev | xargs rm -fv
     endif
     ifeq ($(PLATFORM_OS),OSX)
-		find . -type f -perm +ugo+x -delete
-		rm -f *.o
+		rm -f $(OBJS) $(PROJECT_NAME)$(EXT)
     endif
 endif
 ifeq ($(PLATFORM),PLATFORM_RPI)
